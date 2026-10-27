@@ -16,7 +16,7 @@ npm run start:dev   # mode watch
 npm run start:prod  # production (nécessite `npm run build`)
 ```
 
-L'application écoute sur `http://localhost:3000` (modifiable via la variable `PORT`).
+L'API est accessible sur `http://localhost:3000/api` (port modifiable via la variable `PORT`). Le CORS autorise uniquement `http://localhost:4200`.
 
 ## Tests
 
