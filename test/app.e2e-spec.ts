@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, Logger } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types.js';
 import { AppModule } from './../src/app.module.js';
@@ -46,7 +46,34 @@ describe('AppController (e2e)', () => {
     });
   });
 
+  describe('HTTP logging', () => {
+    it('should log the incoming request and its response', async () => {
+      const logSpy = vi
+        .spyOn(Logger.prototype, 'log')
+        .mockImplementation(() => {});
+
+      await request(app.getHttpServer()).get('/api?lang=fr').expect(200);
+
+      expect(logSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'request',
+          method: 'GET',
+          url: '/api?lang=fr',
+          query: { lang: 'fr' },
+        }),
+      );
+      expect(logSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'response',
+          statusCode: 200,
+          body: 'Hello World!',
+        }),
+      );
+    });
+  });
+
   afterEach(async () => {
+    vi.restoreAllMocks();
     await app.close();
   });
 });
