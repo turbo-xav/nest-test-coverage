@@ -7,7 +7,12 @@ export default defineConfig({
   test: {
     globals: true,
     root: './',
-    include: ['**/*.spec.ts'],
+    // Unit and e2e tests run as two projects so a single run can produce one
+    // merged coverage report. Select one with `--project unit` or `--project e2e`.
+    projects: [
+      { extends: true, test: { name: 'unit', include: ['**/*.spec.ts'] } },
+      { extends: true, test: { name: 'e2e', include: ['**/*.e2e-spec.ts'] } },
+    ],
     coverage: {
       enabled: true,
       provider: 'v8',

@@ -24,7 +24,7 @@ L'API est accessible sur `http://localhost:3000/api` (port modifiable via la var
 npm run test        # tests unitaires
 npm run test:watch  # tests unitaires en mode watch
 npm run test:e2e    # tests end-to-end
-npm run test:cov    # couverture de code
+npm run test:cov    # tous les tests, couverture fusionnée (unitaires + e2e)
 ```
 
 ## Qualité du code
