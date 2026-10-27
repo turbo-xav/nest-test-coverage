@@ -55,6 +55,7 @@ describe('AppService', () => {
       );
 
       expect(returnStringMocked).toBe('other string');
+      expect(returnStringMocked2).toBe('other string');
       expect(appService.getReturnString).toHaveBeenCalled();
       expect(appService.getReturnString).toHaveReturned();
       expect(appService.getReturnString).toHaveBeenCalledWith('Hello','World!');
