@@ -8,7 +8,7 @@ import { setupApp } from './../src/app.setup.js';
 describe('AppController (e2e)', () => {
   let app: INestApplication<App>;
 
-  beforeEach(async () => {
+  async function createApp() {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
@@ -16,6 +16,14 @@ describe('AppController (e2e)', () => {
     app = moduleFixture.createNestApplication();
     setupApp(app);
     await app.init();
+  }
+
+  beforeEach(async () => {
+    // Values set in process.env take precedence over the .env file, so the
+    // tests do not depend on the local .env content.
+    vi.stubEnv('GLOBAL_PREFIX', 'api');
+    vi.stubEnv('CORS_ORIGINS', 'http://localhost:4200');
+    await createApp();
   });
 
   it('/api (GET)', () => {
@@ -46,7 +54,33 @@ describe('AppController (e2e)', () => {
     });
   });
 
+  describe('configuration', () => {
+    it('should use GLOBAL_PREFIX as route prefix', async () => {
+      await app.close();
+      vi.stubEnv('GLOBAL_PREFIX', 'v1');
+      await createApp();
+
+      await request(app.getHttpServer())
+        .get('/v1')
+        .expect(200)
+        .expect('Hello World!');
+      await request(app.getHttpServer()).get('/api').expect(404);
+    });
+
+    it('should use CORS_ORIGINS as allowed origins', async () => {
+      await app.close();
+      vi.stubEnv('CORS_ORIGINS', 'http://a.com');
+      await createApp();
+
+      await request(app.getHttpServer())
+        .get('/api')
+        .set('Origin', 'http://a.com')
+        .expect('Access-Control-Allow-Origin', 'http://a.com');
+    });
+  });
+
   afterEach(async () => {
     await app.close();
+    vi.unstubAllEnvs();
   });
 });
