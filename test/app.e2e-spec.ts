@@ -33,6 +33,18 @@ describe('AppController (e2e)', () => {
       .expect('Hello World!');
   });
 
+  it('/api/person (GET) should return seeded persons', async () => {
+    const response = await request(app.getHttpServer())
+      .get('/api/person')
+      .expect(200);
+
+    expect(response.body).toEqual([
+      { id: 1, name: 'Alice' },
+      { id: 2, name: 'Bob' },
+      { id: 3, name: 'Charlie' },
+    ]);
+  });
+
   it('/ (GET) should not exist without the /api prefix', () => {
     return request(app.getHttpServer()).get('/').expect(404);
   });
