@@ -1,17 +1,35 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import request from 'supertest';
 import { App } from 'supertest/types.js';
+import { DataSource } from 'typeorm';
 import { AppModule } from './../src/app.module.js';
 import { setupApp } from './../src/app.setup.js';
+import { Person } from './../src/person/person.entity.js';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication<App>;
+  const seededPersons: Person[] = [
+    { id: 1, name: 'Alice' },
+    { id: 2, name: 'Bob' },
+    { id: 3, name: 'Charlie' },
+  ];
+  const personRepositoryMock = {
+    count: vi.fn(),
+    save: vi.fn(),
+    find: vi.fn(),
+  };
 
   async function createApp() {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .overrideProvider(DataSource)
+      .useValue({ destroy: vi.fn() })
+      .overrideProvider(getRepositoryToken(Person))
+      .useValue(personRepositoryMock)
+      .compile();
 
     app = moduleFixture.createNestApplication();
     setupApp(app);
@@ -19,6 +37,11 @@ describe('AppController (e2e)', () => {
   }
 
   beforeEach(async () => {
+    vi.resetAllMocks();
+    personRepositoryMock.count.mockResolvedValue(0);
+    personRepositoryMock.save.mockResolvedValue(seededPersons);
+    personRepositoryMock.find.mockResolvedValue(seededPersons);
+
     // Values set in process.env take precedence over the .env file, so the
     // tests do not depend on the local .env content.
     vi.stubEnv('GLOBAL_PREFIX', 'api');
